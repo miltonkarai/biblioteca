@@ -15,10 +15,12 @@ var fimDeJogo,fimDeJogoImg;
 var reiniciar,reiniciarImg;
 
 var pulo,morte, ponto;
+var larguraJogo=window.innerWidth;
+
 
 function criaNuvens(){
   if(frameCount%60===0){
-    nuvem=createSprite(600,100,40,10);
+    nuvem=createSprite(larguraJogo,100,40,10);
     nuvem.y=Math.round(random(10,100));
     nuvem.addImage("cloud",imagemNuvem);
     nuvem.velocityX=-3;
@@ -33,7 +35,7 @@ function criaNuvens(){
 
 function criaObstaculos(){
   if(frameCount%60===0){
-    obstaculo=createSprite(600, 162, 10, 50);
+    obstaculo=createSprite(larguraJogo, 162, 10, 50);
     obstaculo.velocityX = -(6+pontuacao/200);
     
     numeroObstaculo = Math.round(random(1,6));
@@ -74,7 +76,7 @@ function preload(){
   trexCorrendo = loadAnimation("trex1.png", "trex3.png", "trex4.png")
   trexBateu=loadAnimation("trex_collided.png")
   
-  imagemchao=loadImage("ground2.png"); 
+  imagemchao=loadAnimation("ground2.png","ground2.png","ground2.png"); 
   imagemNuvem=loadImage("cloud.png");
   
   obstaculo1 = loadImage("obstacle1.png");
@@ -93,7 +95,7 @@ function preload(){
 }
 
 function setup() {
-  createCanvas(600,200)
+  createCanvas(larguraJogo,200)
 
   trex = createSprite(50, 155, 15, 50);
   trex.addAnimation('correndo', trexCorrendo);
@@ -102,11 +104,11 @@ function setup() {
   trex.setCollider("circle", 0, 0, 40);
   trex.debug = false;
   
-  chao=createSprite( 200,180,400,20)
-  chao.addImage("ground",imagemchao)
+  chao=createSprite( larguraJogo/2,180,larguraJogo,20)
+  chao.addAnimation("ground",imagemchao)
   chao.x=chao.width / 2
   
-  chaoInvisivel=createSprite(200,195,1000,20)
+  chaoInvisivel=createSprite(larguraJogo/2,195,larguraJogo,20)
   chaoInvisivel.visible=false
   
   grupoDeObstaculos = new Group();
@@ -114,18 +116,18 @@ function setup() {
   
   pontuacao = 0;
   
-  reiniciar=createSprite(300,140)
+  reiniciar=createSprite(larguraJogo/2,140)
   reiniciar.addImage(reiniciarImg)
   reiniciar.scale=0.6
   
-  fimDeJogo=createSprite(300,100,300,400)
+  fimDeJogo=createSprite(larguraJogo/2,100,300,400)
   fimDeJogo.addImage(fimDeJogoImg)
   fimDeJogo.scale=1.0 
 }
 
 function draw() {
   background('white');
-  text('Pontuação: ' + pontuacao, 500,50);
+  text('Pontuação: ' + pontuacao, larguraJogo-100,50);
   
   if (estadoDoJogo === "jogar") {
     pontuacao = pontuacao + Math.round(frameCount/60);
@@ -134,7 +136,7 @@ function draw() {
   
     chao.velocityX = -(6+pontuacao/200);   
     
-    if(pontuacao>0&&pontuacao%100===0){
+    if(pontuacao>0&&pontuacao%10000===0){
       ponto.play()
     }
     
@@ -142,9 +144,10 @@ function draw() {
       chao.x=chao.width/2
     }
     
-    if (keyDown('space') && trex.y>=100) {
+    if ((touches.length >0|| keyDown('space') ) && trex.y>=100) {
       trex.velocityY = -13;
       pulo.play()
+      touches=[]
     }
     
     criaNuvens();
@@ -165,14 +168,17 @@ function draw() {
     grupoDeObstaculos.setVelocityXEach(0)
     grupoDeNuvens.setVelocityXEach(0)
     trex.changeAnimation("bateu",trexBateu)
+
+    if (touches.length >0||mousePressedOver(reiniciar)) {
+      reset();
+      touches=[]
+    }
   }
   
   trex.velocityY = trex.velocityY + 1;
   trex.collide(chaoInvisivel);
   
-  if (mousePressedOver(reiniciar)) {
-    reset();
-  }
+  
 
   drawSprites();
 }
